@@ -27,7 +27,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 
 import com.google.inject.Inject;
 import com.itsolut.mantis.core.exception.MantisException;
-import com.itsolut.mantis.core.rest.MantisRestClient;
 import com.itsolut.mantis.core.soap.MantisSoapClient;
 
 /**
@@ -36,27 +35,23 @@ import com.itsolut.mantis.core.soap.MantisSoapClient;
  */
 public class MantisClientFactory {
 
-	private final TaskRepositoryLocationFactory taskRepositoryLocationFactory;
-	private final Tracer tracer;
+    private final TaskRepositoryLocationFactory taskRepositoryLocationFactory;
+    private final Tracer tracer;
 
-	@Inject
-	public MantisClientFactory(TaskRepositoryLocationFactory taskRepositoryLocationFactory, Tracer tracer) {
+    @Inject
+    public MantisClientFactory(TaskRepositoryLocationFactory taskRepositoryLocationFactory, Tracer tracer) {
+        
+        this.taskRepositoryLocationFactory = taskRepositoryLocationFactory;
+        this.tracer = tracer;
+    }
 
-		this.taskRepositoryLocationFactory = taskRepositoryLocationFactory;
-		this.tracer = tracer;
-	}
+    public IMantisClient createClient(AbstractWebLocation webLocation) throws MantisException {
 
-	public IMantisClient createClient(AbstractWebLocation webLocation) throws MantisException {
-		if (webLocation.getUrl().startsWith("webservice")) { // this is normally invalid
-			return new MantisSoapClient(webLocation, tracer);
-
-		} else {
-			return new MantisRestClient(webLocation, tracer);
-		}
-	}
-
-	public IMantisClient createClient(TaskRepository taskRepository) throws MantisException {
-
-		return createClient(taskRepositoryLocationFactory.createWebLocation(taskRepository));
-	}
+        return new MantisSoapClient(webLocation, tracer);
+    }
+    
+    public IMantisClient createClient(TaskRepository taskRepository) throws MantisException {
+        
+        return createClient(taskRepositoryLocationFactory.createWebLocation(taskRepository));
+    }
 }
