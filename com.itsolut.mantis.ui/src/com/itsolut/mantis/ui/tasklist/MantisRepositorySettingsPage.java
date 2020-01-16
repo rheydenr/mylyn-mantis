@@ -16,11 +16,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.mylyn.internal.tasks.ui.wizards.Messages;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryTemplate;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.wizards.AbstractRepositorySettingsPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 
 import com.itsolut.mantis.core.MantisCorePlugin;
 import com.itsolut.mantis.core.MantisRepositoryConfiguration;
@@ -37,6 +42,10 @@ public class MantisRepositorySettingsPage extends AbstractRepositorySettingsPage
 
     private static final String DESCRIPTION = "Enter the path to your repository, for example : http://www.example.com/mantis/\nPlease validate the settings to ensure they are correct.";
 
+    private Composite authTokenComp;
+
+	private StringFieldEditor authTokenEditor;
+
     public MantisRepositorySettingsPage(TaskRepository taskRepository) {
 
         super(TITLE, DESCRIPTION, taskRepository);
@@ -47,7 +56,7 @@ public class MantisRepositorySettingsPage extends AbstractRepositorySettingsPage
         
         setNeedsEncoding(false);
         setNeedsTimeZone(false);
-        setNeedsAdvanced(false);
+        setNeedsAdvanced(false);  // see comment in #createAdditionalControls
     }
     
     @Override
@@ -59,6 +68,31 @@ public class MantisRepositorySettingsPage extends AbstractRepositorySettingsPage
 
     @Override
     protected void createAdditionalControls(final Composite parent) {
+    	// at the moment it isn't possible to store an auth token in the MyLyn Authentification store.
+    	// Therefore we use the user name from HTTP connection settings to store the token.
+    	authTokenEditor = new StringFieldEditor("", "Auth Token", StringFieldEditor.UNLIMITED, //$NON-NLS-1$
+    			parent) {
+
+			@Override
+			protected boolean doCheckState() {
+				return true;
+			}
+
+			@Override
+			protected void valueChanged() {
+				super.valueChanged();
+				isPageComplete();
+				if (getWizard() != null) {
+					getWizard().getContainer().updateButtons();
+				}
+			}
+
+			@Override
+			public int getNumberOfControls() {
+				// always 2 columns -- if no anonymous checkbox, just leave 3rd column empty
+				return 2;
+			}
+		};
     }
 
     @Override
